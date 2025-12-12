@@ -1,10 +1,10 @@
-import { IsEmail, IsString, IsLength } from 'class-validator';
+import { IsEmail, IsString, Length } from 'class-validator';
 
 export class VerifyEmailOtpDto {
   @IsEmail()
   email: string;
 
   @IsString()
-  @IsLength(6, 6)
+  @Length(6, 6)
   otp: string;
 }

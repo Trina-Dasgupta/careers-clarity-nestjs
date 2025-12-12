@@ -150,7 +150,7 @@ export class MailService {
       </div>
     `;
 
-    await this.sendMail(email, 'Welcome to ' + process.env.MAIL_FROM_NAME, html);
+    await this.sendMail(email, `Welcome to ${process.env.MAIL_FROM_NAME}!`, html);
   }
 
   /**
@@ -175,10 +175,5 @@ export class MailService {
     `;
 
     await this.sendMail(email, 'Email Verification OTP', html);
-  }
-}
-    `;
-
-    await this.sendMail(email, `Welcome to ${process.env.MAIL_FROM_NAME}!`, html);
   }
 }

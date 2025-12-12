@@ -160,7 +160,12 @@ export class AuthController {
   @Post('send-verification-otp')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Send OTP to email for verification' })
-  @ApiBody({ type: SendOtpDto })
+  @ApiBody({
+    type: SendOtpDto,
+    schema: {
+      example: { email: 'user@example.com' },
+    },
+  })
   async sendVerificationOTP(@Body() body: SendOtpDto) {
     return this.authService.sendVerificationOTP(body.email);
   }
@@ -169,7 +174,12 @@ export class AuthController {
   @Post('verify-email-otp')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify email with OTP' })
-  @ApiBody({ type: VerifyEmailOtpDto })
+  @ApiBody({
+    type: VerifyEmailOtpDto,
+    schema: {
+      example: { email: 'user@example.com', otp: '123456' },
+    },
+  })
   async verifyEmailOTP(@Body() body: VerifyEmailOtpDto) {
     return this.authService.verifyEmailWithOTP(body.email, body.otp);
   }

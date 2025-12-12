@@ -411,47 +411,48 @@ export class AuthService {
 
   // Verify OTP and mark email as verified
   async verifyEmailWithOTP(email: string, otp: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  const user = await this.prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+  if (!user) {
+    throw new UnauthorizedException('User not found');
+  }
 
-    if (user.isEmailVerified) {
-      return {
-        success: true,
-        message: 'Email is already verified',
-      };
-    }
-
-    // Check if OTP exists and is not expired
-    if (!user.emailVerificationOTP) {
-      throw new BadRequestException('No OTP request found. Please request a new OTP.');
-    }
-
-    if (new Date() > user.emailVerificationOTPExpires) {
-      throw new BadRequestException('OTP has expired. Please request a new one.');
-    }
-
-    // Verify OTP
-    if (user.emailVerificationOTP !== otp) {
-      throw new UnauthorizedException('Invalid OTP');
-    }
-
-    // Mark email as verified and clear OTP
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        isEmailVerified: true,
-        emailVerificationOTP: null,
-        emailVerificationOTPExpires: null,
-      },
-    });
-
+  if (user.isEmailVerified) {
     return {
       success: true,
-      message: 'Email verified successfully',
-      user: this.excludePassword(user),
+      message: 'Email is already verified',
     };
   }
+
+  // Check if OTP exists and is not expired
+  if (!user.emailVerificationOTP) {
+    throw new BadRequestException('No OTP request found. Please request a new OTP.');
+  }
+
+  // Fixed: Check for null before comparing dates
+  if (!user.emailVerificationOTPExpires || new Date() > user.emailVerificationOTPExpires) {
+    throw new BadRequestException('OTP has expired. Please request a new one.');
+  }
+
+  // Verify OTP
+  if (user.emailVerificationOTP !== otp) {
+    throw new UnauthorizedException('Invalid OTP');
+  }
+
+  // Mark email as verified and clear OTP
+  const updatedUser = await this.prisma.user.update({
+    where: { id: user.id },
+    data: {
+      isEmailVerified: true,
+      emailVerificationOTP: null,
+      emailVerificationOTPExpires: null,
+    },
+  });
+
+  return {
+    success: true,
+    message: 'Email verified successfully',
+    user: this.excludePassword(updatedUser),
+  };
+}
 }

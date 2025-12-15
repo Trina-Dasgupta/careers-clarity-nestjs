@@ -168,6 +168,10 @@ model User {
 
 ## 🔄 Request/Response Flow
 
+> Note: After schema changes (e.g., adding `TrendingProject`), run `npx prisma migrate dev --name add-trending-project` and `npx prisma generate` to update the database and client.
+
+
+
 ### Registration Flow
 ```
 Client → POST /auth/register
@@ -393,5 +397,6 @@ password---gcusQPjqt4t3BE7CGBWDVG2VBUrhT9VS
 
 JUDGE0 setup--https://github.com/judge0/judge0/blob/master/CHANGELOG.md
 
-#   c a r e e r s - c l a r i t y - n e s t j s  
+#   c a r e e r s - c l a r i t y - n e s t j s 
+ 
  

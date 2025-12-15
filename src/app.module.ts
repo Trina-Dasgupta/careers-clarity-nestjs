@@ -9,6 +9,7 @@ import { ProblemsModule } from './problems/problems.module';
 import { ExecuteModule } from './execute/execute.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { PlaylistsModule } from './playlists/playlists.module';
+import { TrendingModule } from './trending/trending.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { PlaylistsModule } from './playlists/playlists.module';
     ExecuteModule,
     SubmissionsModule,
     PlaylistsModule,
+    TrendingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

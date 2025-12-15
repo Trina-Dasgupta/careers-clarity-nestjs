@@ -26,10 +26,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto): Promise<any> {
     const { email, password, firstName, lastName, phone } = registerDto;
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -47,7 +48,7 @@ export class AuthService {
 
       const user = await this.prisma.user.create({
         data: {
-          email,
+          email: normalizedEmail,
           password: hashedPassword,
           name,
           firstName,
@@ -74,13 +75,17 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<any> {
     const { email, password } = loginDto;
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Find user by email
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (!user) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Login failed: user not found for email=${normalizedEmail}`);
+      }
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -92,6 +97,9 @@ export class AuthService {
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`Login failed: invalid password for user id=${user.id}`);
+      }
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -133,7 +141,8 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
 
     if (!user) {
       // Return success message even if user not found for security
@@ -161,7 +170,7 @@ export class AuthService {
     try {
       const resetLink = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
       await this.mailService.sendForgotPasswordEmail(
-        user.email,
+        normalizedEmail,
         resetToken,
         resetLink,
       );
@@ -364,7 +373,8 @@ export class AuthService {
 
   // Send OTP to email for verification
   async sendVerificationOTP(email: string): Promise<any> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
 
     if (!user) {
       // For security, return same message as if email exists
@@ -397,7 +407,7 @@ export class AuthService {
 
     // Send OTP via email
     try {
-      await this.mailService.sendVerificationOTP(email, otp);
+      await this.mailService.sendVerificationOTP(normalizedEmail, otp);
     } catch (err) {
       console.error('Failed to send verification OTP email:', err);
       // Still return success to avoid revealing if email exists
@@ -411,7 +421,8 @@ export class AuthService {
 
   // Verify OTP and mark email as verified
   async verifyEmailWithOTP(email: string, otp: string): Promise<any> {
-  const user = await this.prisma.user.findUnique({ where: { email } });
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = await this.prisma.user.findUnique({ where: { email: normalizedEmail } });
 
   if (!user) {
     throw new UnauthorizedException('User not found');

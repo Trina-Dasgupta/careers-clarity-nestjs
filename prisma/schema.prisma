@@ -166,3 +166,15 @@ model ProblemInPlaylist{
   @@unique([playListId , problemId])
 
 }
+
+model TrendingProject {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  link        String?  // optional link to project
+  imageUrl    String?  // optional image
+  isActive    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

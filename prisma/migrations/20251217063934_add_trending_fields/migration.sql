@@ -1,0 +1,18 @@
+-- AlterTable
+ALTER TABLE "TrendingProject" ADD COLUMN     "author" TEXT,
+ADD COLUMN     "category" TEXT,
+ADD COLUMN     "downloads" TEXT,
+ADD COLUMN     "features" JSONB,
+ADD COLUMN     "includes" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN     "isFeatured" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isTrending" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "lastUpdated" TIMESTAMP(3),
+ADD COLUMN     "liveDemo" TEXT,
+ADD COLUMN     "previewUrl" TEXT,
+ADD COLUMN     "price" DOUBLE PRECISION,
+ADD COLUMN     "rating" DOUBLE PRECISION DEFAULT 0,
+ADD COLUMN     "reviews" INTEGER DEFAULT 0,
+ADD COLUMN     "sales" INTEGER DEFAULT 0,
+ADD COLUMN     "tags" TEXT[] DEFAULT ARRAY[]::TEXT[],
+ADD COLUMN     "techStack" JSONB,
+ADD COLUMN     "version" TEXT;

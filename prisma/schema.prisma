@@ -171,6 +171,28 @@ model TrendingProject {
   id          String   @id @default(uuid())
   title       String
   description String?
+
+  // Marketplace fields
+  price       Float?   // price in USD
+  rating      Float?   @default(0)
+  sales       Int?     @default(0)
+  author      String?
+  category    String?
+  tags        String[] @default([])
+  previewUrl  String?
+  liveDemo    String?
+  lastUpdated DateTime?
+  downloads   String?
+  isTrending  Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+
+  // Rich content
+  features    Json?
+  techStack   Json?
+  includes    String[] @default([])
+
+  reviews     Int?     @default(0)
+  version     String?
   link        String?  // optional link to project
   imageUrl    String?  // optional image
   isActive    Boolean  @default(true)

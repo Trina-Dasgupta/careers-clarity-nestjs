@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Put, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Put, Param, Delete, Query, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
 import { TrendingService } from './trending.service';
 import { CreateTrendingDto } from './dto/create-trending.dto';
 import { UpdateTrendingDto } from './dto/update-trending.dto';
@@ -14,10 +14,20 @@ export class TrendingController {
   @Get()
   @ApiOperation({ summary: 'Get trending projects (public)' })
   @ApiQuery({ name: 'active', required: false, description: 'Filter by active projects (true|false)', schema: { example: 'true' } })
-  async getAll(@Query('active') active?: string) {
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)', schema: { example: 1 } })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 10)', schema: { example: 10 } })
+  async getAll(
+    @Query('active') active?: string,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page?: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit?: number,
+  ) {
     const activeOnly = active === undefined || active === 'true';
-    const projects = await this.trendingService.findAll(activeOnly);
-    return { success: true, message: 'Trending projects fetched', projects };
+    const result = await this.trendingService.findAll(activeOnly, page, limit);
+    return { 
+      success: true, 
+      message: 'Trending projects fetched', 
+      ...result 
+    };
   }
 
   @Get(':id')
@@ -35,8 +45,35 @@ export class TrendingController {
     type: CreateTrendingDto,
     schema: {
       example: {
-        title: 'Awesome Project',
-        description: 'Short description of the project',
+        title: 'Social Network Platform',
+        description: 'Full-featured social media platform with real-time chat, posts, friends system, and notifications',
+        price: 299,
+        rating: 4.8,
+        sales: 1247,
+        author: 'CodeMasterPro',
+        category: 'Social Media',
+        tags: ['Next.js', 'Node.js', 'Socket.io', 'MongoDB', 'Tailwind'],
+        previewUrl: '/preview/social-network',
+        liveDemo: 'https://demo-social-network.vercel.app',
+        lastUpdated: '2024-01-15',
+        downloads: '2.5k',
+        isTrending: true,
+        isFeatured: false,
+        features: [
+          'Real-time chat with Socket.io',
+          'Post sharing & commenting',
+          'Friend system & notifications',
+          'Image upload with Cloudinary',
+          'Responsive design'
+        ],
+        techStack: {
+          frontend: ['Next.js 14', 'TypeScript', 'Tailwind CSS', 'Redux'],
+          backend: ['Node.js', 'Express', 'Socket.io', 'JWT'],
+          database: ['MongoDB', 'Redis']
+        },
+        includes: ['Full source code', 'Documentation', 'API endpoints', 'Deployment guide'],
+        reviews: 89,
+        version: '2.1.0',
         link: 'https://github.com/owner/repo',
         imageUrl: 'https://cdn.example.com/image.png',
         isActive: true,

@@ -7,21 +7,75 @@ export class TrendingService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateTrendingDto) {
-    const { title, description, link, imageUrl, isActive } = dto as any;
+    const data = {
+      title: dto.title,
+      description: dto.description,
+      price: dto.price,
+      rating: dto.rating,
+      sales: dto.sales,
+      author: dto.author,
+      category: dto.category,
+      tags: dto.tags || [],
+      previewUrl: dto.previewUrl,
+      liveDemo: dto.liveDemo,
+      lastUpdated: dto.lastUpdated ? new Date(dto.lastUpdated) : null,
+      downloads: dto.downloads,
+      isTrending: dto.isTrending,
+      isFeatured: dto.isFeatured,
+      features: dto.features || [],
+      techStack: dto.techStack || {},
+      includes: dto.includes || [],
+      reviews: dto.reviews,
+      version: dto.version,
+      link: dto.link,
+      imageUrl: dto.imageUrl,
+      isActive: dto.isActive,
+    } as any;
 
-    if (!title) throw new BadRequestException('Title is required');
+    if (!data.title) throw new BadRequestException('Title is required');
 
     const created = await (this.prisma as any).trendingProject.create({
-      data: { title, description, link, imageUrl, isActive },
+      data,
     });
 
     return created;
   }
 
-  async findAll(activeOnly = true) {
+  async findAll(activeOnly = true, page = 1, limit = 10) {
+    // Validate pagination parameters
+    const validatedPage = Math.max(1, page);
+    const validatedLimit = Math.min(Math.max(1, limit), 100); // Max 100 items per page
+    
+    const skip = (validatedPage - 1) * validatedLimit;
     const where = activeOnly ? { isActive: true } : {};
-    const projects = await (this.prisma as any).trendingProject.findMany({ where, orderBy: { createdAt: 'desc' } });
-    return projects;
+
+    // Get total count
+    const total = await (this.prisma as any).trendingProject.count({ where });
+
+    // Get paginated projects
+    const projects = await (this.prisma as any).trendingProject.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: validatedLimit,
+    });
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / validatedLimit);
+    const hasNextPage = validatedPage < totalPages;
+    const hasPrevPage = validatedPage > 1;
+
+    return {
+      projects,
+      pagination: {
+        total,
+        page: validatedPage,
+        limit: validatedLimit,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+      },
+    };
   }
 
   async findOne(id: string) {

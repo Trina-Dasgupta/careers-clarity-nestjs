@@ -124,7 +124,7 @@ Create `.env` file in root:
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/resource_management_db?schema=public"
 JWT_SECRET="your-secret-key"
 JWT_EXPIRATION="7d"
-AUTH_SERVICE_PORT=3001
+AUTH_SERVICE_PORT=8001
 NODE_ENV=development
 CORS_ORIGIN="*"
 ```

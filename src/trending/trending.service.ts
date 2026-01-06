@@ -78,6 +78,14 @@ export class TrendingService {
     };
   }
 
+  // Return all projects without applying the `isActive` filter (useful for admin or audit views)
+  async findAllUnfiltered() {
+    const projects = await (this.prisma as any).trendingProject.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return { projects, total: projects.length };
+  }
+
   async findOne(id: string) {
     const project = await (this.prisma as any).trendingProject.findUnique({ where: { id } });
     if (!project) throw new NotFoundException('Trending project not found');

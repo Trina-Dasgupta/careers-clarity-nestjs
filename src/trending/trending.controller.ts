@@ -30,6 +30,13 @@ export class TrendingController {
     };
   }
 
+  @Get('all')
+  @ApiOperation({ summary: 'Get all projects (public, no active filter)' })
+  async getAllNoFilter() {
+    const result = await this.trendingService.findAllUnfiltered();
+    return { success: true, message: 'All trending projects fetched', ...result };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get single trending project (public)' })
   async getOne(@Param('id') id: string) {

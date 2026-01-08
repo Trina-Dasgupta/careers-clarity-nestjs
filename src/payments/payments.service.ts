@@ -27,6 +27,7 @@ export class PaymentsService {
         amount: Math.round(amount * 100), // convert to cents
         currency,
         metadata,
+        payment_method_types: ['card'],
       });
       return { provider: 'stripe', clientSecret: paymentIntent.client_secret, id: paymentIntent.id, metadata };
     } catch (err) {

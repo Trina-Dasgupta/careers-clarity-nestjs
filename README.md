@@ -166,9 +166,26 @@ model User {
 | POST | `/api/v1/auth/change-password` | Change password |
 | GET | `/api/v1/auth/me` | Get current user info |
 
+### Orders & Payments
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/orders/create` | Create an `Order` (with items) and a PaymentIntent; returns `clientSecret` for Stripe or stub data |
+| GET | `/api/v1/orders/:id` | Get order details (items, payment) |
+| POST | `/api/v1/orders/:id/confirm` | Confirm an order payment manually (or redirect flow) |
+| POST | `/api/v1/payments/create-payment-intent` | Create a payment intent (Stripe) |
+| POST | `/api/v1/payments/webhook` | Receive payment provider webhook events (e.g. Stripe) |
+
 ## 🔄 Request/Response Flow
 
 > Note: After schema changes (e.g., adding `TrendingProject`), run `npx prisma migrate dev --name add-trending-project` and `npx prisma generate` to update the database and client.
+
+> For the Orders & Payments models (added in this change), run:
+> ```bash
+> npx prisma generate
+> npx prisma migrate dev --name add-orders-payments
+> ```
+> Then restart the server (`npm run start:dev`).
 
 
 
@@ -319,12 +336,17 @@ JWT_EXPIRATION=7d
 AUTH_SERVICE_PORT=3001
 NODE_ENV=development
 
+# Stripe (optional, for real payments)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
 # File uploads
 UPLOAD_DEST=uploads
 UPLOAD_MAX_FILE_SIZE=5242880
 UPLOAD_ALLOWED_MIME_TYPES="image/jpeg,image/png,application/pdf"
 ```
 
+> Webhook: If you enable Stripe, set `STRIPE_WEBHOOK_SECRET` and expose the `/payments/webhook` endpoint (ensure your server is reachable from Stripe or use the Stripe CLI during local development: `stripe listen --forward-to http://localhost:3001/api/v1/payments/webhook`).
 ## 🎯 Design Patterns & Best Practices
 
 ### 1. **Modular Architecture**

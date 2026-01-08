@@ -17,6 +17,14 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors(appConfig.cors);
 
+  // Log preflight (OPTIONS) requests to help debug CORS issues during development
+  app.use((req, _res, next) => {
+    if (req.method === 'OPTIONS') {
+      console.log(`⚡️ CORS preflight: ${req.path} origin=${req.headers.origin}`);
+    }
+    next();
+  });
+
   // Set global prefix
   app.setGlobalPrefix('api/v1');
 

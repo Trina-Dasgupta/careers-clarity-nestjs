@@ -7,7 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 enum UserRole {
   ADMIN
   USER
@@ -18,33 +17,38 @@ enum Difficulty {
   MEDIUM
   HARD
 }
+
 model User {
-  id        String   @id @default(uuid())
-  name      String?
-  email     String   @unique
-  image     String?
-  role      UserRole @default(USER)
-  password  String
-  firstName               String?
-  lastName                String?
-  phone                   String?
-  avatar                  String?
-  isEmailVerified         Boolean  @default(false)
-  emailVerificationOTP    String?
+  id                          String    @id @default(uuid())
+  name                        String?
+  email                       String    @unique
+  image                       String?
+  role                        UserRole  @default(USER)
+  password                    String
+  firstName                   String?
+  lastName                    String?
+  phone                       String?
+  avatar                      String?
+  isEmailVerified             Boolean   @default(false)
+  emailVerificationOTP        String?
   emailVerificationOTPExpires DateTime?
-  resetPasswordToken      String?
-  resetPasswordExpires    DateTime?
-  emailVerificationToken  String?
-  isActive                Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  resetPasswordToken          String?
+  resetPasswordExpires        DateTime?
+  emailVerificationToken      String?
+  isActive                    Boolean   @default(true)
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
   problems      Problem[]
   submission    Submission[]
   problemSolved ProblemSolved[]
   playlists     Playlist[]
-}
 
+  // Marketplace relations
+  cartItems CartItem[]
+  favorites Favorite[]
+  orders    Order[]
+}
 
 model Problem {
   id          String     @id @default(uuid())
@@ -66,11 +70,10 @@ model Problem {
   updatedAt DateTime @updatedAt
 
   //  Relationship
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  submission Submission[]
-  solvedBy   ProblemSolved[]
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submission        Submission[]
+  solvedBy          ProblemSolved[]
   problemsPlaylists ProblemInPlaylist[]
- 
 }
 
 // enum Status{
@@ -95,7 +98,7 @@ model Submission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   problem Problem? @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
   testCases TestCaseResult[]
@@ -135,68 +138,154 @@ model ProblemSolved {
   @@unique([userId, problemId])
 }
 
-
-model Playlist{
-  id        String   @id @default(uuid())
-  name  String
+model Playlist {
+  id          String  @id @default(uuid())
+  name        String
   description String?
-  userId  String
+  userId      String
 
-   createdAt DateTime @default(now())
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  problems  ProblemInPlaylist[]
+  problems ProblemInPlaylist[]
 
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([name , userId]) // unique playlist names per user
+  @@unique([name, userId]) // unique playlist names per user
 }
 
-
-model ProblemInPlaylist{
-  id        String   @id @default(uuid())
-  playListId  String
+model ProblemInPlaylist {
+  id         String   @id @default(uuid())
+  playListId String
   problemId  String
-    createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  playlist  Playlist @relation(fields: [playListId] , references: [id] , onDelete: Cascade)
-  problem Problem @relation(fields: [problemId] , references: [id] , onDelete: Cascade)
+  playlist Playlist @relation(fields: [playListId], references: [id], onDelete: Cascade)
+  problem  Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
-  @@unique([playListId , problemId])
-
+  @@unique([playListId, problemId])
 }
 
 model TrendingProject {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
 
   // Marketplace fields
-  price       Float?   // price in USD
-  rating      Float?   @default(0)
-  sales       Int?     @default(0)
+  price       Float? // price in USD
+  rating      Float?    @default(0)
+  sales       Int?      @default(0)
   author      String?
   category    String?
-  tags        String[] @default([])
+  tags        String[]  @default([])
   previewUrl  String?
   liveDemo    String?
   lastUpdated DateTime?
   downloads   String?
-  isTrending  Boolean  @default(false)
-  isFeatured  Boolean  @default(false)
+  isTrending  Boolean   @default(false)
+  isFeatured  Boolean   @default(false)
 
   // Rich content
-  features    Json?
-  techStack   Json?
-  includes    String[] @default([])
+  features  Json?
+  techStack Json?
+  includes  String[] @default([])
 
-  reviews     Int?     @default(0)
-  version     String?
-  link        String?  // optional link to project
-  imageUrl    String?  // optional image
-  isActive    Boolean  @default(true)
+  reviews  Int?    @default(0)
+  version  String?
+  link     String? // optional link to project
+  imageUrl String? // optional image
+  isActive Boolean @default(true)
+
+  // Marketplace relations
+  cartItems  CartItem[]
+  favorites  Favorite[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Cart items for users
+model CartItem {
+  id                String   @id @default(uuid())
+  userId            String
+  trendingProjectId String
+  quantity          Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project TrendingProject @relation(fields: [trendingProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trendingProjectId])
+}
+
+// Favorite / Wishlist
+model Favorite {
+  id                String   @id @default(uuid())
+  userId            String
+  trendingProjectId String
+  createdAt         DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project TrendingProject @relation(fields: [trendingProjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, trendingProjectId])
+}
+
+// Orders for marketplace purchases
+model Order {
+  id        String      @id @default(cuid())
+  userId    String
+  total     Float
+  currency  String      @default("usd")
+  status    OrderStatus @default(PENDING)
+  items     OrderItem[]
+  payment   Payment?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OrderItem {
+  id                String @id @default(cuid())
+  orderId           String
+  trendingProjectId String
+  quantity          Int    @default(1)
+  price             Float
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  project TrendingProject @relation(fields: [trendingProjectId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String?       @unique
+  provider          String // 'stripe', 'paypal', 'bank'
+  providerPaymentId String?
+  amount            Float
+  currency          String        @default("usd")
+  status            PaymentStatus @default(PENDING)
+  method            String?
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  order Order? @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELED
 }

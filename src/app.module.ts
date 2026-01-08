@@ -10,6 +10,10 @@ import { ExecuteModule } from './execute/execute.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { PlaylistsModule } from './playlists/playlists.module';
 import { TrendingModule } from './trending/trending.module';
+import { CartModule } from './cart/cart.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { PaymentsModule } from './payments/payments.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import { TrendingModule } from './trending/trending.module';
     SubmissionsModule,
     PlaylistsModule,
     TrendingModule,
+    CartModule,
+    FavoritesModule,
+    PaymentsModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

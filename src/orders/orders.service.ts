@@ -74,6 +74,50 @@ export class OrdersService {
     return order;
   }
 
+  async getPurchasedProjects(userId: string, page = 1, limit = 10) {
+    // Validate pagination
+    const validPage = Math.max(1, page);
+    const validLimit = Math.min(Math.max(1, limit), 100);
+    const skip = (validPage - 1) * validLimit;
+
+    // Get user's successful orders (PAID or PENDING - both count as purchased)
+    const orders = await (this.prisma as any).order.findMany({
+      where: { userId, status: { in: ['PAID', 'PENDING'] } },
+      include: { 
+        items: { 
+          include: { project: true } 
+        } 
+      },
+      orderBy: { createdAt: 'asc' },
+      skip,
+      take: validLimit,
+    });
+
+    // Flatten projects from orders
+    const projects = orders.flatMap((order:any) => 
+      order.items.map((item:any) => ({
+        ...item.project,
+        purchasedAt: order.createdAt,
+        orderId: order.id,
+        orderStatus: order.status,
+      }))
+    );
+
+    const total = await (this.prisma as any).order.count({
+      where: { userId, status: { in: ['PAID', 'PENDING'] } },
+    });
+
+    return {
+      projects,
+      pagination: {
+        page: validPage,
+        limit: validLimit,
+        total,
+        totalPages: Math.ceil(total / validLimit),
+      },
+    };
+  }
+
   async confirmOrder(orderId: string, providerPaymentId?: string, status: 'SUCCEEDED' | 'FAILED' | 'CANCELED' = 'SUCCEEDED') {
     const order = await (this.prisma as any).order.findUnique({ where: { id: orderId }, include: { payment: true } });
     if (!order) throw new NotFoundException('Order not found');

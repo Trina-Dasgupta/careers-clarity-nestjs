@@ -6,7 +6,6 @@ export class CartService {
   constructor(private prisma: PrismaService) {}
 
   async addToCart(userId: string, trendingProjectId: string, quantity = 1) {
-    // Upsert behavior: if exists, increment quantity
     const existing = await (this.prisma as any).cartItem.findUnique({
       where: { userId_trendingProjectId: { userId, trendingProjectId } },
     });

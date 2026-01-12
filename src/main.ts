@@ -18,7 +18,7 @@ async function bootstrap() {
   app.enableCors(appConfig.cors);
 
   // Log preflight (OPTIONS) requests to help debug CORS issues during development
-  app.use((req, _res, next) => {
+  app.use((req:any, _res:any, next:any) => {
     if (req.method === 'OPTIONS') {
       console.log(`⚡️ CORS preflight: ${req.path} origin=${req.headers.origin}`);
     }
@@ -53,7 +53,6 @@ async function bootstrap() {
     prefix: '/uploads/',
   });
 
-  // Enable cookie parsing so req.cookies is available (used by JwtStrategy)
   app.use(cookieParser());
 
   // Swagger setup
@@ -72,7 +71,6 @@ async function bootstrap() {
   const port = appConfig.port;
   await app.listen(port, '0.0.0.0');
 
-  console.log(`✅ Authentication Service running on port ${port}`);
   console.log(`🚀 API available at: http://localhost:${port}/api/v1`);
 }
 

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Req, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req, Get, Param, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -27,6 +27,16 @@ export class OrdersController {
     const userId = req.user?.id;
     const order = await this.ordersService.getOrder(id, userId);
     return { success: true, order };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('user/purchased')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Get user purchased projects' })
+  async getPurchasedProjects(@Req() req, @Query('page') page = '1', @Query('limit') limit = '10') {
+    const userId = req.user?.id;
+    const result = await this.ordersService.getPurchasedProjects(userId, parseInt(page), parseInt(limit));
+    return { success: true, data: result };
   }
 
   @UseGuards(JwtAuthGuard)

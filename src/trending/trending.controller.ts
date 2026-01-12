@@ -30,6 +30,33 @@ export class TrendingController {
     };
   }
 
+  @Get('stats/summary')
+  @ApiOperation({ summary: 'Get trending statistics (public)' })
+  async getStats() {
+    const projects = await this.trendingService.findAllUnfiltered();
+    const totalSales = projects.projects.reduce((sum, p) => sum + (Number(p.sales) || 0), 0);
+    const avgRating = projects.projects.length > 0 
+      ? (projects.projects.reduce((sum, p) => sum + (Number(p.rating) || 0), 0) / projects.projects.length)
+      : 0;
+    const activeProjects = projects.projects.filter(p => p.isActive).length;
+    const totalDownloads = projects.projects.reduce((sum, p) => {
+      const downloads = typeof p.downloads === 'string' 
+        ? parseInt(p.downloads.replace(/[^\d]/g, '')) || 0 
+        : Number(p.downloads) || 0;
+      return sum + downloads;
+    }, 0);
+
+    return {
+      success: true,
+      data: {
+        totalSales,
+        avgRating: parseFloat(avgRating.toFixed(2)),
+        activeProjects,
+        totalDownloads,
+      },
+    };
+  }
+
   @Get('all')
   @ApiOperation({ summary: 'Get all projects (public, no active filter)' })
   async getAllNoFilter() {
